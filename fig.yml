@@ -1,0 +1,12 @@
+zookeeper:
+  image: "advancedtelematic/zookeeper"
+  ports:
+    - "2181:2181"
+kafka:
+  image: "ches/kafka"
+  environment:
+    - EXPOSED_HOST=192.168.59.103
+  ports:
+    - "9092:9092"
+  links:
+    - zookeeper:zookeeper
