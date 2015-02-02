@@ -3,7 +3,6 @@ FROM debian:stable
 ENV REFRESHED_AT 2015-21-01
 
 RUN apt-get update; apt-get install -y openjdk-7-jre-headless wget
-ADD zookeeper-3.4.6.tar.gz /opt
 RUN wget -q -O - http://mirror.softaculous.com/apache/zookeeper/zookeeper-3.4.6/zookeeper-3.4.6.tar.gz | tar xz -C /opt
 RUN mv /opt/zookeeper-3.4.6/conf/zoo_sample.cfg /opt/zookeeper-3.4.6/conf/zoo.cfg
 
