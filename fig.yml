@@ -10,3 +10,19 @@ kafka:
     - "9092:9092"
   links:
     - zookeeper:zookeeper
+feeder:
+  image: "data-feeds:0.0.1"
+  links:
+    - kafka:kafka
+api:
+  image: "data-api:1.0-SNAPSHOT"
+  links:
+    - zookeeper:zk
+  ports:
+    - "9000:9000"
+ui:
+  image: "advancedtelematic/rvi-demo:0.1.0"
+  ports:
+    - "10555:10555"
+  environment:
+    - TRACES_URI=ws://boot2docker:9000/ws
