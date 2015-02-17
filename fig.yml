@@ -11,17 +11,23 @@ kafka:
   links:
     - zookeeper:zookeeper
 feeder:
-  image: "data-feeds:0.0.1"
+  image: "data-feeds:0.0.3"
   links:
     - kafka:kafka
+cassandra:
+  image: "poklet/cassandra"
+  ports:
+    - "9042:9042"
+    - "9160:9160"
 api:
-  image: "data-api:1.0-SNAPSHOT"
+  image: "data-api:0.0.1"
   links:
+    - cassandra:cassandra
     - zookeeper:zk
   ports:
     - "9000:9000"
 ui:
-  image: "advancedtelematic/rvi-demo:0.1.0"
+  image: "advancedtelematic/rvi-demo:0.3.2"
   ports:
     - "10555:10555"
   environment:
