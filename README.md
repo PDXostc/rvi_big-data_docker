@@ -44,6 +44,9 @@ Edit fig.yml to update IP addresses:
 - ui > environment > API_URI should be set to the "http://<docker_host_ip>:9000/"
 fig up -d
 
+# Create DB schema
+docker run -it --rm --link docker_cassandra_1:cass1 -v `pwd`/scripts:/data poklet/cassandra bash -c 'cqlsh $CASS1_PORT_9160_TCP_ADDR -f /data/schema.cql'
+
 # Import of historical data
 cd rvi_big_data/data_feeds
 JAVA_OPTS="-Xms512M -XX:NewRatio=3 -Xmx4G -Xss10M" sbt "runMain com.advancedtelematic.feed.CassandraFeeder" -Dcassandra.host=<ip_of_cassandra>
