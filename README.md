@@ -41,4 +41,9 @@ docker build -t "advancedtelematic/zookeeper" ./zookeeper
 Edit fig.yml to update IP addresses:
 - kafka > environment > EXPOSED_HOST should be set to the IP address of the docker host
 - ui > environment > TRACES_URI should be set to the "ws://<docker_host_ip>:9000/ws"
+- ui > environment > API_URI should be set to the "http://<docker_host_ip>:9000/"
 fig up -d
+
+# Import of historical data
+cd rvi_big_data/data_feeds
+JAVA_OPTS="-Xms512M -XX:NewRatio=3 -Xmx4G -Xss10M" sbt "runMain com.advancedtelematic.feed.CassandraFeeder" -Dcassandra.host=<ip_of_cassandra>

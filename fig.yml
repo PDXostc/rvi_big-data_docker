@@ -28,7 +28,10 @@ api:
     - "9000:9000"
 ui:
   image: "advancedtelematic/rvi-demo:0.3.2"
+  links:
+    - api:api
   ports:
     - "10555:10555"
   environment:
     - TRACES_URI=ws://boot2docker:9000/ws
+    - API_URI=http://boot2docker:9000/
