@@ -11,7 +11,7 @@ kafka:
   links:
     - zookeeper:zookeeper
 feeder:
-  image: "data-feeds:0.0.3"
+  image: "advancedtelematic/rvi_data_feeds"
   links:
     - kafka:kafka
 cassandra:
@@ -20,14 +20,14 @@ cassandra:
     - "9042:9042"
     - "9160:9160"
 api:
-  image: "data-api:0.0.1"
+  image: "advancedtelematic/rvi_data_api"
   links:
     - cassandra:cassandra
     - zookeeper:zk
   ports:
     - "9000:9000"
 ui:
-  image: "advancedtelematic/rvi-demo:0.3.2"
+  image: "advancedtelematic/rvi_demo_ui:0.4.0"
   links:
     - api:api
   ports:
