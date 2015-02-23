@@ -24,3 +24,13 @@ CREATE TABLE IF NOT EXISTS rvi_demo.traces_by_time(
    	is_occupied boolean,
    	PRIMARY KEY ((year, month, day, hour, minute), id)
 );
+
+CREATE TABLE IF NOT EXISTS rvi_demo.pickups_dropoffs(
+	year int,
+	date timestamp,
+	id text,
+   	lat decimal,
+   	lng decimal,
+   	is_pickup boolean,
+   	PRIMARY KEY ((year), date, id)
+);
