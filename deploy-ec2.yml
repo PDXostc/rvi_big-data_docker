@@ -1,0 +1,159 @@
+---
+- name: create EC2 instance
+  hosts: localhost
+  connection: local
+  vars_prompt:
+    - name: ec2_region
+      prompt: "EC2 region"
+      default: eu-central-1
+      private: no
+    - name: ec2_instance_type
+      prompt: "Instance type"
+      default: c3.xlarge
+      private: no
+    - name: ec2_key
+      prompt: "Key name"
+      default: aws_frankfurt
+      private: no
+  vars:
+    - ec2_group: rvi_demo
+  roles:
+    - { role: 'coreos-ec2', group_name: rvi }
+  tasks:
+    - name: Adjust security group
+      local_action:
+        module: ec2_group
+        purge_rules: false
+        purge_rules_egress: false
+        name: "{{ ec2_group }}"
+        description: "Rvi Big Data demo"
+        region: "{{ ec2_region }}"
+        state: present
+        rules:
+          - proto: tcp
+            from_port: 9092
+            to_port: 9092
+            cidr_ip: 87.138.108.187/32
+          - proto: tcp
+            from_port: 2181
+            to_port: 2181
+            cidr_ip: 87.138.108.187/32
+          - proto: tcp
+            from_port: 9042
+            to_port: 9042
+            cidr_ip: 87.138.108.187/32
+          - proto: tcp
+            from_port: 9160
+            to_port: 9160
+            cidr_ip: 87.138.108.187/32
+          - proto: tcp
+            from_port: 9000
+            to_port: 9000
+            cidr_ip: 0.0.0.0/0
+          - proto: tcp
+            from_port: 10555
+            to_port: 10555
+            cidr_ip: 0.0.0.0/0
+
+- name: bootstrap
+  hosts: rvi
+  vars:
+    ansible_ssh_user: core
+    ansible_python_interpreter: "PATH=/home/core/bin:$PATH python"
+  gather_facts: False
+  roles:
+    - defunctzombie.coreos-bootstrap
+  tasks:
+    - name: install docker-py
+      pip: name=docker-py version="0.6.0"
+
+- name: launch containers
+  hosts: rvi
+  vars_prompt:
+    - name: registry_user
+      prompt: "Docker Hub user name"
+      private: no
+    - name: registry_password
+      prompt: "Docker Hub password"
+      private: yes
+    - name: registry_email
+      prompt: "Docker Hub email"
+      private: no
+  vars:
+    ansible_ssh_user: core
+    ansible_python_interpreter: "PATH=/home/core/bin:$PATH python"
+  tasks:
+    - name: pull zookeeper image
+      raw: docker pull advancedtelematic/zookeeper
+    - name: launch zookeeper
+      docker:
+        image="advancedtelematic/zookeeper"
+        name="zookeeper"
+        ports="2181:2181"
+        state=running
+    - name: pull kafka image
+      raw: docker pull ches/kafka
+    - name: launch kafka
+      docker:
+        image="ches/kafka"
+        name="kafka"
+        links="zookeeper:zookeeper"
+        ports="9092:9092"
+        state=running
+    - name: pull cassandra image
+      raw: docker pull poklet/cassandra
+    - name: launch cassandra
+      docker:
+        image: "poklet/cassandra"
+        name: "cassandra"
+        ports:
+          - 9042:9042
+          - 9160:9160
+        state: running
+    - name: Copy DB scripts
+      copy: src="scripts" dest="/home/core" owner="core"
+    - name: Create DB schema
+      raw: docker run -it --rm --link cassandra:cassandra -v /home/core/scripts:/data poklet/cassandra bash -c 'cqlsh $CASSANDRA_PORT_9160_TCP_ADDR -f /data/schema.cql'
+
+    - name: login into Docker Hub
+      raw: docker login -u {{ registry_user }} -p {{ registry_password }} -e {{ registry_email}}
+    - name: pull feeder image
+      raw: docker pull advancedtelematic/rvi_data_feeds
+    - name: Import data
+      raw: docker run --rm -i -t --link=cassandra:cassandra advancedtelematic/rvi_data_feeds /opt/docker/bin/data-feeds -main com.advancedtelematic.feed.CassandraFeeder
+
+    - name: pull api image
+      raw: docker pull advancedtelematic/rvi_data_api
+    - name: launch api
+      docker:
+        image: "advancedtelematic/rvi_data_api"
+        name: api
+        ports:
+          - 9000:9000
+        links:
+          - cassandra:cassandra
+          - zookeeper:zk
+        state: running
+      register: api_container
+
+    - name: pull ui image
+      raw: docker pull advancedtelematic/rvi_demo_ui:0.4.0
+    - name: launch ui
+      docker:
+        image: "advancedtelematic/rvi_demo_ui:0.4.0"
+        name: ui
+        expose: 10555
+        ports:
+          - 10555:10555
+        env:
+          TRACES_URI: ws://{{inventory_hostname}}:9000/ws
+          API_URI: http://{{inventory_hostname}}:9000/
+        state: running
+
+    - name: start data feeds
+      docker:
+        image: "advancedtelematic/rvi_data_feeds"
+        name: feeds
+        links:
+          - kafka:kafka
+        state: running
