@@ -1,0 +1,8 @@
+- name: bootstrap
+  hosts: rvi
+  gather_facts: False
+  roles:
+    - defunctzombie.coreos-bootstrap
+  tasks:
+    - name: install docker-py
+      pip: name=docker-py version="0.6.0"
