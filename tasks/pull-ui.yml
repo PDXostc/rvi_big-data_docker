@@ -1,0 +1,3 @@
+---
+- name: pull ui image
+  raw: docker pull advancedtelematic/rvi_demo_ui:0.5.3

@@ -1,0 +1,8 @@
+---
+- name: start data feeds
+  docker:
+    image: "advancedtelematic/rvi_data_feeds"
+    name: feeds
+    links:
+      - kafka:kafka
+    state: running
