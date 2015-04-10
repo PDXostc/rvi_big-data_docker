@@ -1,0 +1,10 @@
+---
+- name: pull kafka image
+  raw: docker pull ches/kafka
+- name: launch kafka
+  docker:
+    image: "ches/kafka"
+    name: "kafka"
+    links: "zookeeper:zookeeper"
+    ports: "9092:9092"
+    state: running

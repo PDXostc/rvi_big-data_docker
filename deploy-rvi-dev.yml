@@ -1,21 +1,16 @@
 ---
 - name: launch containers
-  hosts: rvi
+  hosts: local:coreos
   vars_prompt:
     - name: registry_user
       prompt: "Docker Hub user name"
       private: no
-      default: koshelev
     - name: registry_password
       prompt: "Docker Hub password"
       private: yes
     - name: registry_email
       prompt: "Docker Hub email"
-      default: vr.koshelev@gmail.com
       private: no
-  vars:
-    ansible_ssh_user: core
-    ansible_python_interpreter: "PATH=/home/core/bin:$PATH python"
   tasks:
     # external software
     - include: tasks/launch-zookeper.yml
@@ -25,19 +20,15 @@
     # try to log in to docker.io
     - include: tasks/docker-login.yml
 
-    # just update/pull the data feeds container from docker.io
+    # data feeds
     - include: tasks/pull-data-feeds.yml
+    - include: tasks/import-historical-data.yml
+    - include: tasks/run-data-feeds.yml
 
-    # uncomment the following line to import historical data
-    # - include: tasks/import-historical-data.yml
-
-    # launch the api
+    # api
     - include: tasks/launch-api.yml
 
-    # don't try to update the ui from docker.io, just run it
-    # uncomment the following line to update
-    # - include: tasks/pull-ui.yml
+    # ui
+    - include: tasks/pull-ui.yml
     - include: tasks/run-ui.yml
 
-    # finally start the data feeds container
-    - include: tasks/run-data-feeds.yml

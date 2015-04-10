@@ -42,6 +42,9 @@ The easiest way to deploy the system is to use prebuild docker images. There is 
 
 The installation guides for all supported operating systems can be found [here](https://docs.docker.com/installation/#installation).
 
+### Create a dockerhub user
+Create an account at [docker hub](https://hub.docker.com/account/signup/). You will need to be added to the advancedtelematic organisation there.
+
 ### Installing Ansible.
 
 The installation instructions can be found [here](http://docs.ansible.com/intro_installation.html). Provided playbook was tested with versions 1.8.4 and 1.9.0.1.
@@ -120,6 +123,30 @@ Building image: `./sbt docker:publishLocal`
 Running the container:
 ```
 docker run --rm -t -i --link=<kafka-container>:kafka advancedtelematic/rvi_data_feeds
+```
+
+## Starting in vagrant
+
+The vagrant machine is configured by running the following:
+
+```
+./setup-coreos-vagrant.sh
+```
+
+This also deploys the application. Keep in mind the task "Import data" takes a while (10min+).
+
+To redeploy the application to vagrant run:
+
+```
+ssh-add ~/.vagrant.d/insecure_private_key
+ansible-playbook deploy-rvi-dev.yml -i coreos-ansible-example/inventory/vagrant
+```
+
+## Starting locally
+update hosts-dev and set `ansible_ssh_user` to your user.
+
+```
+ansible-playbook deploy-rvi-dev.yml -i hosts-dev
 ```
 
 ## API

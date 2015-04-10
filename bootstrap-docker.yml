@@ -1,5 +1,5 @@
 - name: bootstrap
-  hosts: rvi
+  hosts: rvi:coreos
   gather_facts: False
   roles:
     - defunctzombie.coreos-bootstrap

@@ -1,0 +1,32 @@
+---
+- name: pull cassandra image
+  raw: docker pull poklet/cassandra
+
+- name: launch cassandra
+  docker:
+    image: "poklet/cassandra"
+    name: "cassandra"
+    ports:
+      - 9042:9042
+      - 9160:9160
+    volumes:
+      - /var/lib/cassandra
+    state: running
+
+- name: Copy DB scripts
+  copy:
+    src: scripts
+    dest: '/home/{{ ansible_ssh_user }}'
+    owner: '{{ ansible_ssh_user }}'
+
+- name: Wait for cassandra
+  wait_for: host=localhost port=9042 delay=30 timeout=60 state=started
+
+- name: Create DB schema
+  docker:
+    image: poklet/cassandra
+    volumes:
+      - /home/{{ ansible_ssh_user }}/scripts:/data
+    links:
+      - cassandra:cassandra
+    command: bash -c 'cqlsh $CASSANDRA_PORT_9160_TCP_ADDR -f /data/schema.cql'

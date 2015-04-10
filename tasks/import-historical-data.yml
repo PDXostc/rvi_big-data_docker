@@ -1,0 +1,3 @@
+---
+- name: Import data
+  raw: docker run --rm -i --link=cassandra:cassandra advancedtelematic/rvi_data_feeds /opt/docker/bin/data-feeds -main com.advancedtelematic.feed.CassandraFeeder -Ddata.dir=data/cabspottingdata

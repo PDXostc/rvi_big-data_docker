@@ -1,0 +1,3 @@
+---
+- name: login into Docker Hub
+  raw: docker login -u '{{ registry_user }}' -p '{{ registry_password }}' -e '{{ registry_email}}'
