@@ -19,8 +19,14 @@
     dest: '/home/{{ ansible_ssh_user }}'
     owner: '{{ ansible_ssh_user }}'
 
+- name: Check if cassandra is already up
+  register: is_cassandra_up
+  wait_for: host=localhost port=9042 timeout=10 state=started
+  ignore_errors: True
+
 - name: Wait for cassandra
   wait_for: host=localhost port=9042 delay=30 timeout=60 state=started
+  when: is_cassandra_up | failed
 
 - name: Create DB schema
   docker:
