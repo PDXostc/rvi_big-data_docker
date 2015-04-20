@@ -1,11 +1,11 @@
 ---
-- name: pull api image
+- name: pull the api image
   raw: docker pull advancedtelematic/rvi_data_api
 
 - name: launch api
   docker:
     image: "advancedtelematic/rvi_data_api"
-    name: api
+    name: "rvi-api"
     expose: 9000
     ports:
       - 9000:9000
@@ -13,4 +13,3 @@
       - cassandra:cassandra
       - zookeeper:zk
     state: running
-  register: api_container

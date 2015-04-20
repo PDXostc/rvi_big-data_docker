@@ -1,0 +1,18 @@
+---
+# TODO: find a better way to propagate the api ip/hostname
+- name: pull the ui image
+  raw: docker pull "advancedtelematic/rvi_demo_ui:0.5.3"
+
+- name: launch ui
+  docker:
+    image: "advancedtelematic/rvi_demo_ui:0.5.3"
+    name: "ui"
+    expose: 10555
+    ports:
+      - 10555:10555
+    links:
+      - rvi-api:rvi-api
+    env:
+      TRACES_URI: ws://{{ rvi_api_uri }}:9000/ws
+      API_URI: http://{{ rvi_api_uri }}:9000/
+    state: running

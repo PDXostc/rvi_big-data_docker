@@ -1,0 +1,34 @@
+---
+- name: pull feeder image
+  raw: docker pull advancedtelematic/rvi_data_feeds
+
+- name: Copy DB scripts
+  copy:
+    src: scripts/
+    dest: "{{ tmp_dir.stdout }}/scripts/"
+    owner: "{{ ansible_ssh_user }}"
+
+- name: Create RVI DB schema
+  docker:
+    image: poklet/cassandra
+    volumes:
+      - "{{ tmp_dir.stdout }}/scripts:/data"
+    links:
+      - cassandra:cassandra
+    command: bash -c 'cqlsh $CASSANDRA_PORT_9160_TCP_ADDR -f /data/rvi-schema.cql'
+    
+- name: Import data
+  raw: docker run --rm -i --link=cassandra:cassandra advancedtelematic/rvi_data_feeds /opt/docker/bin/data-feeds -main com.advancedtelematic.feed.CassandraFeeder -Ddata.dir=data/cabspottingdata
+    
+- name: start data feeds
+  docker:
+    image: "advancedtelematic/rvi_data_feeds"
+    name: "rvi-data-feeds"
+    links:
+      - kafka:kafka
+    env:
+      RVI_DATA: /var/lib/traces
+    volumes:
+      - /var/lib/traces:{{ data_volume }}
+    state: running
+

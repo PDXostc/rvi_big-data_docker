@@ -1,3 +1,0 @@
----
-- name: pull feeder image
-  raw: docker pull advancedtelematic/rvi_data_feeds

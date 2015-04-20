@@ -1,0 +1,9 @@
+---
+- name: start data ingestion
+  docker:
+    image: "advancedtelematic/rvi_data_ingestion"
+    name: ingestion
+    links:
+      - cassandra:cassandra
+      - zookeeper:zk
+    state: running

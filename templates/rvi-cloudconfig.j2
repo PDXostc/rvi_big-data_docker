@@ -17,12 +17,14 @@ coreos:
     command: start
     content: |
       [Unit]
-      Description=Formats the ebs drive
+      Description=Formats the ebs drives
       [Service]
       Type=oneshot
       RemainAfterExit=yes
       ExecStart=/usr/sbin/wipefs -f /dev/xvdf
       ExecStart=/usr/sbin/mkfs.btrfs -f /dev/xvdf
+      ExecStart=/usr/sbin/wipefs -f /dev/xvde
+      ExecStart=/usr/sbin/mkfs.btrfs -f /dev/xvde
   - name: format-ephemeral.service
     command: start
     requires: media-ephemeral.mount
@@ -59,5 +61,15 @@ coreos:
       What=/dev/xvdf
       Where=/var/lib/cassandra
       Type=btrfs
-
-# {{ ansible_managed }}
+  - name: var-lib-traces.mount
+    command: start
+    content: |
+      [Unit]
+      Description=Mount drive to /var/lib/traces
+      Requires=format-ebs.service
+      After=format-ebs.service
+      Before=docker.service
+      [Mount]
+      What=/dev/xvde
+      Where=/var/lib/traces
+      Type=btrfs

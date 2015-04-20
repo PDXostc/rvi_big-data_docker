@@ -1,0 +1,18 @@
+#cloud-config
+
+---
+coreos:
+  etcd:
+    addr: $private_ipv4:4001
+    peer-addr: $private_ipv4:7001
+    discovery: "{{ lookup('pipe', 'curl -s https://discovery.etcd.io/new') }}"
+  fleet:
+    public-ip: $private_ipv4
+  units:
+  - name: etcd.service
+    command: start
+  - name: fleet.service
+    command: start
+  update:
+    reboot-strategy: off
+
