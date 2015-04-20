@@ -1,43 +1,31 @@
 ---
-- name: launch containers
-  hosts: rvi
+- name: launch rvi on localhost and in vagrant
+  hosts: vagrant
   vars_prompt:
+    - name: ansible_ssh_user
+      prompt: "Local user name"
+      private: no
     - name: registry_user
       prompt: "Docker Hub user name"
       private: no
-      default: koshelev
     - name: registry_password
       prompt: "Docker Hub password"
       private: yes
     - name: registry_email
       prompt: "Docker Hub email"
-      default: vr.koshelev@gmail.com
+      private: no
+    - name: feeder_data_dir
+      prompt: "Feeder data"
+      default: /var/lib/traces
       private: no
   vars:
-    ansible_ssh_user: core
-    ansible_python_interpreter: "PATH=/home/core/bin:$PATH python"
-  tasks:
-    # external software
-    - include: tasks/launch-zookeper.yml
-    - include: tasks/launch-kafka.yml
-    - include: tasks/launch-cassandra.yml
-
-    # try to log in to docker.io
-    - include: tasks/docker-login.yml
-
-    # just update/pull the data feeds container from docker.io
-    - include: tasks/pull-data-feeds.yml
-
-    # uncomment the following line to import historical data
-    # - include: tasks/import-historical-data.yml
-
-    # launch the api
-    - include: tasks/launch-api.yml
-
-    # don't try to update the ui from docker.io, just run it
-    # uncomment the following line to update
-    # - include: tasks/pull-ui.yml
-    - include: tasks/run-ui.yml
-
-    # finally start the data feeds container
-    - include: tasks/run-data-feeds.yml
+    - rvi_api_uri: "{{ hostvars[inventory_hostname].ansible_ssh_host }}"
+  roles:
+    - zookeeper
+    - kafka
+    - cassandra
+    - docker-hub
+    - { role: rvi-data-feeds, data_volume: "{{ feeder_data_dir }}" }
+    - rvi-data-ingestion
+    - rvi-api
+    - rvi-ui

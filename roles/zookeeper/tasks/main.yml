@@ -1,10 +1,11 @@
 ---
-- name: pull zookeeper image
+- name: pull the zookeeper image
   raw: docker pull advancedtelematic/zookeeper
+
 - name: launch zookeeper
   docker:
-    image: advancedtelematic/zookeeper
-    name: zookeeper
+    image: "advancedtelematic/zookeeper"
+    name: "zookeeper"
     ports:
       - 2181:2181
     state: running

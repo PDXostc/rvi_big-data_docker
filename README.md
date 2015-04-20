@@ -4,35 +4,48 @@
 
 All components can be deployed as docker containers, locally or in cloud. The image below shows the components and their dependencies.
 
-    ┏━━━━━━━━━━━━━━━━━━━━━━━━━━┓                ┏━━━━━━━━━━━━━━━━━━━━━━━━━┓         ┏━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-    ┃Docker                    ┃                ┃Docker                   ┃         ┃Docker                    ┃
-    ┃  ┌────────────────────┐  ┃                ┃ ┌────────────────────┐  ┃         ┃  ┌────────────────────┐  ┃
-    ┃  │     Zookeeper      │  ┃◀──────┬────────┫ │       Kafka        │  ┃◀────────┃  │       Feeder       │  ┃
-    ┃  └────────────────────┘  ┃       │        ┃ └────────────────────┘  ┃         ┃  └────────────────────┘  ┃
-    ┗━━━━━━━━━━━━━━━━━━━━━━━━━━┛       │        ┗━━━━━━━━━━━━━━━━━━━━━━━━━┛         ┗━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-                                       │                     ▲
-                                       │                     │
-                                       │                     │
-                                       │                     │
-                                       │       ┏━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-    ┏━━━━━━━━━━━━━━━━━━━━━━━━━━┓       │       ┃Docker                    ┃
-    ┃Docker                    ┃       │       ┃   ╔════════════════════╗ ┃
-    ┃  ┌────────────────────┐  ┃       │       ┃   ║        API         ║ ┃
-    ┃  │     Cassandra      │  ┃◀──────┴───────┃   ║ ┌─────────────────┐║ ┃
-    ┃  └────────────────────┘  ┃               ┃   ║ │      Spark      │║ ┃
-    ┗━━━━━━━━━━━━━━━━━━━━━━━━━━┛               ┃   ║ └─────────────────┘║ ┃
-                                               ┃   ╚════════════════════╝ ┃
-                                               ┗━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-                                                            ▲
-                                                            │
-                                                            │
-                                                            │
-                                             ┏━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-                                             ┃Docker                    ┃
-                                             ┃  ┌────────────────────┐  ┃
-                                             ┃  │         UI         │  ┃
-                                             ┃  └────────────────────┘  ┃
-                                             ┗━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+<pre>
+                                           ┏━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+                                           ┃Docker                    ┃
+                                           ┃  ┌────────────────────┐  ┃
+                                           ┃  │       Feeder       │  ┃
+                                           ┃  └────────────────────┘  ┃
+                                           ┗━━━━━━━━━━━━━┳━━━━━━━━━━━━┛
+                                                         │
+                                                         │
+                                                         │
+                                                         │
+                                                         ▼                         ┏━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━┓                ┏━━━━━━━━━━━━━━━━━━━━━━━━━┓            ┃Docker                    ┃
+┃Docker                    ┃                ┃Docker                   ┃            ┃   ╔════════════════════╗ ┃
+┃  ┌────────────────────┐  ┃                ┃ ┌────────────────────┐  ┃            ┃   ║     Ingestion      ║ ┃
+┃  │     Zookeeper      │  ┃◀──────┬────────┫ │       Kafka        │  ┃◀───────────┃   ║ ┌─────────────────┐║ ┃
+┃  └────────────────────┘  ┃       │        ┃ └────────────────────┘  ┃            ┃   ║ │      Spark      │║ ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━┛       │        ┗━━━━━━━━━━━━━━━━━━━━━━━━━┛            ┃   ║ └─────────────────┘║ ┃
+                                   │                     ▲                         ┃   ╚════════════════════╝ ┃
+                                   │                     │                         ┗━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+                                   │                     │                                       │
+                                   │                     │                                       │
+                                   │       ┏━━━━━━━━━━━━━━━━━━━━━━━━━━┓                          │
+                                   │       ┃Docker                    ┃                          │
+                                   │       ┃   ╔════════════════════╗ ┃                          │
+                                   │       ┃   ║        API         ║ ┃                          │
+                                   └───────┃   ║ ┌─────────────────┐║ ┃─────┐                    │
+                                           ┃   ║ │      Spark      │║ ┃     │                    │
+                                           ┃   ║ └─────────────────┘║ ┃     │                    │
+                                           ┃   ╚════════════════════╝ ┃     │                    ▼
+                                           ┗━━━━━━━━━━━━━━━━━━━━━━━━━━┛     │      ┏━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+                                                         ▲                  │      ┃Docker                    ┃
+                                                         │                  │      ┃  ┌────────────────────┐  ┃
+                                                         │                  └─────▶┃  │     Cassandra      │  ┃
+                                                         │                         ┃  └────────────────────┘  ┃
+                                           ┏━━━━━━━━━━━━━━━━━━━━━━━━━━┓            ┗━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+                                           ┃Docker                    ┃
+                                           ┃  ┌────────────────────┐  ┃
+                                           ┃  │         UI         │  ┃
+                                           ┃  └────────────────────┘  ┃
+                                           ┗━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+</pre>
 
 ## Quick Start
 
@@ -51,7 +64,7 @@ The installation instructions can be found [here](http://docs.ansible.com/intro_
 
 ### Running playbook.
 
-To run the playbook the following command should be used: `ansible-playbook deploy-rvi.yml -i hosts`. In case the docker host differs from `127.0.0.1:2375` the `hosts` file should be adjusted by setting the parameters of the `rvi` entry. Please refer to the list of the available parameters on the [Ansible documentation page](http://docs.ansible.com/intro_inventory.html#list-of-behavioral-inventory-parameters). 
+To run the playbook the following command should be used: `ansible-playbook deploy-rvi.yml -i inventory/rvi`. In case the docker host differs from `127.0.0.1:2375` the file should be adjusted by setting the parameters of the `rvi` entry. Please refer to the list of the available parameters on the [Ansible documentation page](http://docs.ansible.com/intro_inventory.html#list-of-behavioral-inventory-parameters). 
 
 ## Manual building docker images.
 
@@ -123,6 +136,19 @@ Building image: `./sbt docker:publishLocal`
 Running the container:
 ```
 docker run --rm -t -i --link=<kafka-container>:kafka advancedtelematic/rvi_data_feeds
+```
+
+### Data ingestion
+
+Spark streaming running on localhost, preprocesses the data and stores it into cassandra. 
+
+[GitHub repository](https://github.com/advancedtelematic/rvi_big_data-data-ingestion.git) 
+
+`./sbt docker:publishLocal` builds the docker image on the docker host specified by `DOCKER_HOST` environment variable.
+
+Running the container:
+```
+docker run --rm -t -i --link=<cassandra-container>:cassandra --link=<zookeeper_container>:zk advancedtelematic/rvi_data_ingestion
 ```
 
 ## Starting in vagrant

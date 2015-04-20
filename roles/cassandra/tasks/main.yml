@@ -1,0 +1,18 @@
+---
+- name: pull the cassandra image
+  raw: docker pull poklet/cassandra
+
+- name: launch cassandra
+  docker:
+    image: "poklet/cassandra"
+    name: "cassandra"
+    ports:
+      - 9042:9042
+      - 9160:9160
+    volumes:
+      - /var/lib/cassandra
+    state: running
+
+- name: Wait for cassandra
+  wait_for: host=localhost port=9042 delay=30 timeout=60 state=started
+
