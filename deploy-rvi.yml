@@ -1,6 +1,6 @@
 ---
 - name: launch rvi on localhost and in vagrant
-  hosts: vagrant
+  hosts: local:vagrant
   vars_prompt:
     - name: ansible_ssh_user
       prompt: "Local user name"
