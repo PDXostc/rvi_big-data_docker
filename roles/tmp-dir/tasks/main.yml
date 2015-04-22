@@ -1,0 +1,4 @@
+---
+- name: Make temp dir
+  local_action: command mktemp -d
+  register: tmp_dir
