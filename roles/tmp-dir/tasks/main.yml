@@ -1,4 +1,7 @@
 ---
 - name: Make temp dir
-  local_action: command mktemp -d
+  raw: command mktemp -d -t tmp.XXXX
   register: tmp_dir
+
+- name: Save tmp dir as fact
+  set_fact: tmpdir={{ tmp_dir.stdout }}
